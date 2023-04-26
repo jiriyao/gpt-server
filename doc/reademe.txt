@@ -1,0 +1,4 @@
+文档：https://platform.openai.com/docs/api-reference/chat/create
+查看最新API:
+curl --location --request GET 'https://api.openai.com/v1/models?=' \
+--header 'Authorization: Bearer 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'

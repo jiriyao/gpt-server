@@ -1,0 +1,75 @@
+type (
+	Request {
+		Name string `path:"name,options=you|me"`
+	}
+
+	Response {
+		Message string `json:"message"`
+	}
+
+	Resp { //统一的返回格式
+		Code int64       `json:"code"`
+		Msg  string      `json:"msg"`
+		Data interface{} `json:"data,omitempty"`
+	}
+
+	ChatGptQuestionRequest {
+		StreamId string `json:"stream_id,optional"`
+		Question string `json:"question"`
+	}
+
+	ChatGptQuestionResponse {
+		Q      string `json:"q"`
+		Answer string `json:"answer"`
+	}
+
+	LoginRequest {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+)
+@server(
+	//	jwt: Auth // 登录验证中间件声明
+	middleware: CommonRoute // 路由中间件声明
+	prefix: chatgpt3
+	timeout : 10000ms
+)
+
+service code-api {
+	@handler CodeHandler
+	post /from/:name  returns (Resp)
+	
+	@handler ChatgptQuestionHandler
+	post /question/async (ChatGptQuestionRequest) returns (Resp)
+	
+	@handler ChatgptQuestionSyncHandler
+	post /question/sync (ChatGptQuestionRequest) returns (Resp)
+	
+	@handler ChatgptAuthQuestionHandler
+	post /question/auth (ChatGptQuestionRequest) returns (Resp)
+	
+}
+
+@server(
+	//	jwt: Auth // 登录验证中间件声明
+	middleware: CommonRoute // 路由中间件声明
+	prefix: chatgpt3
+	timeout : 100000ms
+)
+service code-api {
+	@handler Chatgpt35Stream
+	post /question/streamsync35 (ChatGptQuestionRequest) returns (Resp)
+}
+
+@server(
+	timeout : 100000ms
+	middleware: CommonRoute // 路由中间件声明
+	prefix: chatgpt3
+)
+service code-api {
+	@handler LoginHandler
+	post /user/login (LoginRequest) returns (Resp)
+	
+	@handler SseTestHandler
+	post /sse/test (ChatGptQuestionRequest) returns (Resp)
+}
