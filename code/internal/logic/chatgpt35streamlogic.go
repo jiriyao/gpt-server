@@ -27,87 +27,60 @@ func NewChatgpt35StreamLogic(ctx context.Context, svcCtx *svc.ServiceContext) *C
 }
 
 func (l *Chatgpt35StreamLogic) Chatgpt35Stream(req *types.ChatGptQuestionRequest) (resp *types.Resp, err error) {
-	//go func() {
-	//	err = service.GetQuestionResponseAsyncStream(l.ctx, l.svcCtx, req.Question, func(v gpt3.ChatCompletionStreamResponseChoice) {
-	//		if v.Delta.Content != "" {
-	//			l.svcCtx.SseServer.Publish(req.StreamId, &sse.Event{
-	//				Data: []byte(v.Delta.Content),
-	//			})
-	//		}
-	//		if v.FinishReason != "" {
-	//			l.Logger.Infof("v.FinishReason:" + v.FinishReason)
-	//			l.svcCtx.SseServer.RemoveStream(req.StreamId)
-	//		}
-	//	})
-	//
-	//	if err != nil {
-	//		l.Logger.Error("v.err:" + err.Error())
-	//		l.svcCtx.SseServer.RemoveStream(req.StreamId)
-	//	}
-	//}()
 	go func() {
-		//l.svcCtx.SseServer.Publish(req.StreamId, &sse.Event{
-		//	Data: []byte("chat error"),
-		//})
-		//l.svcCtx.SseServer.RemoveStream(req.StreamId)
+		c := openai.NewClient(l.svcCtx.Config.ChatGpt.ApiKey)
+		ctx := context.Background()
 
-		l.test(req)
+		reqGpt := openai.ChatCompletionRequest{
+			Model:     openai.GPT3Dot5Turbo,
+			MaxTokens: 200,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: req.Question,
+				},
+				{
+					Role:    openai.ChatMessageRoleSystem,
+					Content: "You ara chatgpt.",
+				},
+			},
+			Stream: true,
+		}
+		stream, err := c.CreateChatCompletionStream(ctx, reqGpt)
+		if err != nil {
+			fmt.Printf("ChatCompletionStream error: %v\n", err)
+			return
+		}
+		defer stream.Close()
+
+		fmt.Printf("Stream response: ")
+		for {
+			response, err := stream.Recv()
+			if errors.Is(err, io.EOF) {
+				fmt.Println("\nStream finished")
+				l.svcCtx.SseServer.RemoveStream(req.StreamId)
+				return
+			}
+
+			if err != nil {
+				fmt.Printf("\nStream error: %v\n", err)
+				l.svcCtx.SseServer.Publish(req.StreamId, &sse.Event{
+					Data: []byte("chat error"),
+				})
+				l.svcCtx.SseServer.RemoveStream(req.StreamId)
+				return
+			}
+
+			content := response.Choices[0].Delta.Content
+			fmt.Printf(content)
+
+			if content != "" {
+				l.svcCtx.SseServer.Publish(req.StreamId, &sse.Event{
+					Data: []byte(content),
+				})
+			}
+		}
 	}()
 
 	return
-}
-
-func (l *Chatgpt35StreamLogic) test(req *types.ChatGptQuestionRequest) {
-	c := openai.NewClient(l.svcCtx.Config.ChatGpt.ApiKey)
-	ctx := context.Background()
-
-	reqGpt := openai.ChatCompletionRequest{
-		Model:     openai.GPT3Dot5Turbo,
-		MaxTokens: 200,
-		Messages: []openai.ChatCompletionMessage{
-			{
-				Role:    openai.ChatMessageRoleUser,
-				Content: req.Question,
-			},
-			{
-				Role:    openai.ChatMessageRoleSystem,
-				Content: "You ara chatgpt.",
-			},
-		},
-		Stream: true,
-	}
-	stream, err := c.CreateChatCompletionStream(ctx, reqGpt)
-	if err != nil {
-		fmt.Printf("ChatCompletionStream error: %v\n", err)
-		return
-	}
-	defer stream.Close()
-
-	fmt.Printf("Stream response: ")
-	for {
-		response, err := stream.Recv()
-		if errors.Is(err, io.EOF) {
-			fmt.Println("\nStream finished")
-			l.svcCtx.SseServer.RemoveStream(req.StreamId)
-			return
-		}
-
-		if err != nil {
-			fmt.Printf("\nStream error: %v\n", err)
-			l.svcCtx.SseServer.Publish(req.StreamId, &sse.Event{
-				Data: []byte("chat error"),
-			})
-			l.svcCtx.SseServer.RemoveStream(req.StreamId)
-			return
-		}
-
-		content := response.Choices[0].Delta.Content
-		fmt.Printf(content)
-
-		if content != "" {
-			l.svcCtx.SseServer.Publish(req.StreamId, &sse.Event{
-				Data: []byte(content),
-			})
-		}
-	}
 }

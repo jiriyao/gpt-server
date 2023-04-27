@@ -27,6 +27,29 @@ type (
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
+
+	MsgOptions {
+		ParentMessageId string `json:"parentMessageId,optional"`
+	}
+
+	ChatProcessRequest {
+		StreamId      string     `json:"stream_id,optional"`
+		Prompt        string     `json:"prompt"`
+		Options       MsgOptions `json:"options"`
+		SystemMessage string     `json:"systemMessage,optional"`
+		Temperature   float32    `json:"temperature,optional"`
+		TopP          float32    `json:"top_p,optional"`
+	}
+
+	ChatProcessResponse {
+		Role            string `json:"role"`
+		Id              string `json:"id"`
+		ParentMessageId string `json:"parentMessageId,optional"`
+		Text            string `json:"text"`
+		FinishReason    string `json:"finish_reason"`
+		Model           string `json:"model"`
+		DeltaText       string `json:"delta_text"`
+	}
 )
 @server(
 	//	jwt: Auth // 登录验证中间件声明
@@ -59,6 +82,9 @@ service code-api {
 service code-api {
 	@handler Chatgpt35Stream
 	post /question/streamsync35 (ChatGptQuestionRequest) returns (Resp)
+	
+	@handler ChatProcessRequestStream
+	post /chat-progress (ChatProcessRequest) returns (Resp)
 }
 
 @server(

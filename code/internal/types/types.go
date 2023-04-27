@@ -29,3 +29,26 @@ type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type MsgOptions struct {
+	ParentMessageId string `json:"parentMessageId,optional"`
+}
+
+type ChatProcessRequest struct {
+	StreamId      string     `json:"stream_id,optional"`
+	Prompt        string     `json:"prompt"`
+	Options       MsgOptions `json:"options"`
+	SystemMessage string     `json:"systemMessage,optional"`
+	Temperature   float32    `json:"temperature,optional"`
+	TopP          float32    `json:"top_p,optional"`
+}
+
+type ChatProcessResponse struct {
+	Role            string `json:"role"`
+	Id              string `json:"id"`
+	ParentMessageId string `json:"parentMessageId,optional"`
+	Text            string `json:"text"`
+	FinishReason    string `json:"finish_reason"`
+	Model           string `json:"model"`
+	DeltaText       string `json:"delta_text"`
+}

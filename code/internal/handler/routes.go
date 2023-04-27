@@ -49,6 +49,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/question/streamsync35",
 					Handler: Chatgpt35StreamHandler(serverCtx),
 				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/chat-progress",
+					Handler: ChatProcessRequestStreamHandler(serverCtx),
+				},
 			}...,
 		),
 		rest.WithPrefix("/chatgpt3"), rest.WithTimeout(100000*time.Millisecond),
