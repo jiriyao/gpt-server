@@ -1,6 +1,9 @@
 package config
 
-import "github.com/zeromicro/go-zero/rest"
+import (
+	"chatgptserver/pkg/redis"
+	"github.com/zeromicro/go-zero/rest"
+)
 
 type Config struct {
 	rest.RestConf
@@ -13,6 +16,8 @@ type Config struct {
 		SessionToken     string
 		RefreshTokenTime int64
 	}
+
+	Redis redis.ClusterConf
 
 	User struct { //用jwt
 		Username string

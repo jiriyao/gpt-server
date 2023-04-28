@@ -9,8 +9,8 @@ Middlewares:
 #AccessToken 需要定时刷新，crontab 跑一个wget
 #API KEY 可以是多个，每个用户分配一个单独key
 ChatGpt:
-  Api: https://api.openai-sb.com/v1/
-  ApiKey: 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 #sb-6b995d7b060e68052154c9ddb2eb3843
+  Api: https://api.openai.com/v1/
+  ApiKey: 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
   #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
   # payed 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
   #新：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
@@ -32,3 +32,9 @@ Net:
 Auth:
   AccessSecret: ad879037-c7a4-4063-9236-6bfc35d54b7d
   AccessExpire: 86400
+
+
+Redis:
+  - Host: "127.0.0.1:6379"
+    Pass: ""
+    Prefix: "gpt"

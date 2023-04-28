@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/PullRequestInc/go-gpt3"
-	"github.com/otiai10/openaigo"
 	"github.com/zeromicro/go-zero/core/logx"
 	"strings"
 )
@@ -82,33 +81,8 @@ func GetQuestionResponseSync(client gpt3.Client, ctx context.Context, svcCtx *sv
 	return sb.String(), nil
 }
 
-//gpt-3.5-turbo-0301
-//gpt-3.5-turbo
-func GetQuestionResponseSync35(ctx context.Context, svcCtx *svc.ServiceContext, quesiton string, paySuccess func(openaigo.ChatChoice)) error {
-	client := openaigo.NewClient(svcCtx.Config.ChatGpt.ApiKey)
-	request := openaigo.ChatCompletionRequestBody{
-		Model: "gpt-3.5-turbo",
-		Messages: []openaigo.ChatMessage{
-			{Role: "user", Content: quesiton},
-		},
-	}
-
-	rsp, err := client.Chat(ctx, request)
-
-	if err != nil {
-		return err
-	}
-
-	if len(rsp.Choices) > 0 {
-		for _, v := range rsp.Choices {
-			paySuccess(v)
-		}
-	}
-	return nil
-}
-
 func GetQuestionResponseAsyncStream(ctx context.Context, svcCtx *svc.ServiceContext, quesiton string, onData func(gpt3.ChatCompletionStreamResponseChoice)) error {
-	client := gpt3.NewClient(svcCtx.Config.ChatGpt.ApiKey)
+	client := gpt3.NewClient(svcCtx.Config.ChatGpt.ApiKey, gpt3.WithBaseURL(svcCtx.Config.ChatGpt.Api))
 	err := client.ChatCompletionStream(ctx, gpt3.ChatCompletionRequest{ //命令行方式可以用
 		Model: "gpt-3.5-turbo",
 		Messages: []gpt3.ChatCompletionRequestMessage{

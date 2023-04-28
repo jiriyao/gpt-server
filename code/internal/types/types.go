@@ -35,12 +35,14 @@ type MsgOptions struct {
 }
 
 type ChatProcessRequest struct {
-	StreamId      string     `json:"stream_id,optional"`
-	Prompt        string     `json:"prompt"`
-	Options       MsgOptions `json:"options"`
-	SystemMessage string     `json:"systemMessage,optional"`
-	Temperature   float32    `json:"temperature,optional"`
-	TopP          float32    `json:"top_p,optional"`
+	StreamId       string     `json:"stream_id,optional"`
+	ConversationId string     `json:"conversation_id,optional"`
+	Prompt         string     `json:"prompt"`
+	Mode           string     `json:"mode,optional"`
+	Options        MsgOptions `json:"options"`
+	SystemMessage  string     `json:"systemMessage,optional"`
+	Temperature    float32    `json:"temperature,optional"`
+	TopP           float32    `json:"top_p,optional"`
 }
 
 type ChatProcessResponse struct {
